@@ -184,6 +184,11 @@ def intruder_detected(pos):
 
 def election():
     global codis_list_pos
+    global codis_list_size
+    global no_heartbeats
+    global codis_list
+    global coordinator
+
     successor_pos = codis_list_pos + 1
     if codis_list_size == successor_pos:
         successor_pos = 0
