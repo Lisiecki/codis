@@ -372,7 +372,7 @@ with picamera.PiCamera() as camera:
                     print("codis pos: ", codis_list_pos, '\n', "codis size: ", codis_list_size, '\n', "coordinator: ", is_coordinator, '\n', "alert: ", is_alert)
             except (socket.timeout):
                 continue
-    except:
+    except KeyboardInterrupt:
         leave()
         disable_pir()
         if camera_enabled == 1:
