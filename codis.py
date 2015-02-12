@@ -18,10 +18,6 @@ MSG_INDEX_CMD = 0x0
 MSG_INDEX_POS = 0x1
 MSG_INDEX_OTHER = 0x2
 
-ALERTED_STATE = 0x0
-COORDINATOR_STATE = 0x1
-INACTIVE_STATE = 0x2
-
 SHUTDOWN_CAM_MSG = 0x0
 INTRUDER_MSG = 0x1
 JOIN_RESPONSE_MSG = 0x2
@@ -37,34 +33,35 @@ REMOVE_FROM_CODIS_MSG = 0xc
 
 UDP_IP = "<broadcast>"
 UDP_PORT = 58333
-MOTION_DETECTED_MSG = bytes([INTRUDER_MSG])
-PIR_DETECTED_MSG = bytes([0x2])
+
 PIR_GPIO = 7
-MOTION_DETECTED_THRESHOLD = 10
-INTRUDER_DETECTED_THRESHOLD = 25
+
 MAX_NO_MOTION_CNT = 50
-TIMEOUT = 5.0
-COORDINATOR_PERIOD = 90.0
-MOTION_THRESHOLD = 3.0
-NO_MOTION_THRESHOLD = 30.0
-LAST_INTRUDER_THRESHOLD = 3.0
-HEARTBEAT_INTERVAL = 12.0
 MAX_NO_HEARTBEATS = 3
- 
+
+TIMEOUT = 5.0
+COORDINATOR_PERIOD = 900.0
+NO_MOTION_THRESHOLD = 300.0
+HEARTBEAT_INTERVAL = 120.0
+
 no_heartbeats = 0
-last_heartbeat = 0.0
-last_heartbeat_from_successor = 0.0
+
 motion_flag = False
 coordinator = 0
 codis_list = []
 codis_list_size = 0
 codis_list_pos = 0
 no_motion_cnt = 0
-camera_enabled = 0
-pir_enabled = 0
+
+
+last_heartbeat = 0.0
+last_heartbeat_from_successor = 0.0
 last_motion_detected = 0.0
 last_intruder_detected = 0.0
 last_intruder_by_another = 0.0
+
+camera_enabled = 0
+pir_enabled = 0
 is_alert = 0
 is_coordinator = 0
 
@@ -186,6 +183,7 @@ def intruder_detected(pos):
     server_socket.sendto(intruder_msg, codis_list[pos])
 
 def election():
+    global codis_list_pos
     successor_pos = codis_list_pos + 1
     if codis_list_size == successor_pos:
         successor_pos = 0
@@ -201,7 +199,7 @@ def election():
                     break
         except (socket.timeout):
             no_heartbeats += 1
-            if no_heartbeats == MAX_NO_HEARTBEATS:
+            if no_heartbeats >= MAX_NO_HEARTBEATS:
                 remove_successor(successor_pos)
                 codis_list.pop(remote_cmd[successor_pos])
                 codis_list_size -= 1
@@ -287,8 +285,8 @@ with picamera.PiCamera() as camera:
                     heartbeat(successor_pos)
                     last_heartbeat = time.time()
                     if (time.time() - last_heartbeat_from_successor) > HEARTBEAT_INTERVAL:
-                        no_heartbeats += 0
-                    if no_heartbeats == MAX_NO_HEARTBEATS:
+                        no_heartbeats += 1
+                    if no_heartbeats >= MAX_NO_HEARTBEATS:
                         print("remove successor from codis system")
                         remove(successor_pos)
                         codis_list.pop(remote_cmd[successor_pos])
@@ -319,6 +317,7 @@ with picamera.PiCamera() as camera:
                 elif remote_cmd[MSG_INDEX_CMD] == HEARTBEAT_MSG:
                     print("received heartbeat message from successor ")
                     last_heartbeat_from_successor = time.time()
+                    no_heartbeats = 0
                 elif remote_cmd[MSG_INDEX_CMD] == ELECTION_MSG:
                     if remote_cmd[MSG_INDEX_POS] != codis_list_pos:
                         print("received election message")
