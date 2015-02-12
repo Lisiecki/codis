@@ -201,7 +201,7 @@ def election():
             no_heartbeats += 1
             if no_heartbeats >= MAX_NO_HEARTBEATS:
                 remove_successor(successor_pos)
-                codis_list.pop(remote_cmd[successor_pos])
+                codis_list.pop(successor_pos)
                 codis_list_size -= 1
                 if successor_pos < codis_list_pos:
                     codis_list_pos -= 1
@@ -289,7 +289,7 @@ with picamera.PiCamera() as camera:
                     if no_heartbeats >= MAX_NO_HEARTBEATS:
                         print("remove successor from codis system")
                         remove_successor(successor_pos)
-                        codis_list.pop(remote_cmd[successor_pos])
+                        codis_list.pop(successor_pos)
                         codis_list_size -= 1
                         if successor_pos < codis_list_pos:
                             codis_list_pos -= 1
