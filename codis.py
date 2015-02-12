@@ -358,7 +358,7 @@ with picamera.PiCamera() as camera:
                         last_heartbeat_from_successor = time.time()
                 elif remote_cmd[MSG_INDEX_CMD] == LEAVE_MSG:
                     print(remote_addr[0], " left the codis system")
-                    codis_list.remove_successor(remote_addr)
+                    codis_list.remove(remote_addr)
                     codis_list_size -= 1
                     if remote_cmd[MSG_INDEX_POS] < codis_list_pos:
                         codis_list_pos -= 1
