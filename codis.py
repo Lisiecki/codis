@@ -288,7 +288,7 @@ with picamera.PiCamera() as camera:
                         no_heartbeats += 1
                     if no_heartbeats >= MAX_NO_HEARTBEATS:
                         print("remove successor from codis system")
-                        remove(successor_pos)
+                        remove_successor(successor_pos)
                         codis_list.pop(remote_cmd[successor_pos])
                         codis_list_size -= 1
                         if successor_pos < codis_list_pos:
@@ -353,7 +353,7 @@ with picamera.PiCamera() as camera:
                         last_heartbeat_from_successor = time.time()
                 elif remote_cmd[MSG_INDEX_CMD] == LEAVE_MSG:
                     print(remote_addr[0], " left the codis system")
-                    codis_list.remove(remote_addr)
+                    codis_list.remove_successor(remote_addr)
                     codis_list_size -= 1
                     if remote_cmd[MSG_INDEX_POS] < codis_list_pos:
                         codis_list_pos -= 1
@@ -372,7 +372,7 @@ with picamera.PiCamera() as camera:
                     print("codis pos: ", codis_list_pos, '\n', "codis size: ", codis_list_size, '\n', "coordinator: ", is_coordinator, '\n', "alert: ", is_alert)
             except (socket.timeout):
                 continue
-    except KeyboardInterrupt:
+    except:
         leave()
         disable_pir()
         if camera_enabled == 1:
@@ -384,5 +384,6 @@ with picamera.PiCamera() as camera:
     disable_pir()
     if camera_enabled == 1:
         camera.stop_recording()
+    camera.close()
     server_socket.close()
     GPIO.cleanup()
